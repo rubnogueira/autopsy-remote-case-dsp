@@ -1,5 +1,12 @@
+import os
 import threading
-import time
+
+from time import time
+
+from urllib2 import urlopen
+from contextlib import closing
+
+from shutil import copyfileobj
 
 from java.util import UUID
 from java.awt import Dimension
@@ -98,15 +105,30 @@ class DataSourcesPanelSettings(JPanel):
         data_sources = []
         errors = []
 
-        data_sources.append(ModuleUtils.add_to_fileset('RemoteCase{} - {}'.format(int(time.time()), self.link_url), ['/home/myuser/aut/test']))
+        progressMonitor.setProgressText('\tDownloading contents from {}\n\tPlease wait.'.format(self.link_url))
+        artefact_path = os.path.join(Case.getCurrentCase().getTempDirectory(), "remote_case")
+        if not os.path.exists(artefact_path):
+            os.makedirs(artefact_path)
 
+        download_path = os.path.join(artefact_path, 'file.zip')
+        # download_path = os.path.join('/home/myuser/aut/test', 'file.zip')
+
+        try: 
+            downloader = Downloader(self.link_url, download_path)
+            downloader.download()
+            data_sources.append(ModuleUtils.add_to_fileset('RemoteCase{} - {}'.format(int(time()), self.link_url), [download_path]))
+            
+        except Exception as e:
+            message = "Downloader Failed. Aborting: {}".format(e)
+            errors.append(message)
+            result = DataSourceProcessorCallback.DataSourceProcessorResult.CRITICAL_ERRORS
 
 
         callback.done(result, errors, data_sources)
 
-    def addPropertyChangeListener(self, pcl):
-        super(DataSourcesPanelSettings, self).addPropertyChangeListener(pcl)
-        self.pcs.addPropertyChangeListener(pcl)
+    # def addPropertyChangeListener(self, pcl):
+    #     super(DataSourcesPanelSettings, self).addPropertyChangeListener(pcl)
+    #     self.pcs.addPropertyChangeListener(pcl)
 
     def fireUIUpdate(self):
         #Fire UI change, this is necessary to know if it's allowed to click next
@@ -151,3 +173,12 @@ class DataSourcesPanelSettings(JPanel):
             # return JPanel().add(scrollpane)
         
         return panel
+
+class Downloader:
+    def __init__(self, url, path):
+        self.url = url
+        self.path = path
+
+    def download(self):
+        with closing(urlopen(self.url)) as response, open(self.path, 'wb') as out_file:
+            copyfileobj(response, out_file)

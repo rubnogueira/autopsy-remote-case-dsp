@@ -7,7 +7,7 @@ Download and add any file as Data Source input artefacts.
 ## Prerequisites
 
 * [Python](https://www.python.org/downloads/) (2.7+)
-* [Autopsy from rubnogueira/autopsy](https://github.com/rubnogueira/autopsy) - Planned to merge in main repository - https://github.com/sleuthkit/autopsy/pull/6027
+* [Autopsy from rubnogueira/autopsy (data-source-processor-jython)](https://github.com/rubnogueira/autopsy/tree/data-source-processor-jython) - Planned to merge in main repository - https://github.com/sleuthkit/autopsy/pull/6027
 
 ## How to use
 
@@ -25,7 +25,8 @@ The script can be used directly as Autopsy module.
 * **Ruben Nogueira** - [GitHub](https://github.com/rubnogueira)
 
 ## TODO
-- Implement download
+- Implement multiple link downloader
+- Retain url file downloaded properties (filename, type)
 - Separate classes into files
 
 ## Environments Tested
